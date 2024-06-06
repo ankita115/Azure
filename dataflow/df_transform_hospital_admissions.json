@@ -12,13 +12,20 @@
 					"name": "HospitalsAdmissionsSource"
 				},
 				{
-					"name": "source1"
+					"dataset": {
+						"referenceName": "country_lookup",
+						"type": "DatasetReference"
+					},
+					"name": "CountrySource"
 				}
 			],
 			"sinks": [],
 			"transformations": [
 				{
 					"name": "SelectRequiredFields"
+				},
+				{
+					"name": "LookupCountry"
 				}
 			],
 			"scriptLines": [
@@ -35,7 +42,8 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> HospitalsAdmissionsSource",
 				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> CountrySource",
 				"HospitalsAdmissionsSource select(mapColumn(",
 				"          country,",
 				"          indicator,",
@@ -46,7 +54,11 @@
 				"          url",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> SelectRequiredFields"
+				"     skipDuplicateMapOutputs: true) ~> SelectRequiredFields",
+				"SelectRequiredFields, CountrySource lookup(country == ERROR_FUNCTION(''),",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> LookupCountry"
 			]
 		}
 	}
